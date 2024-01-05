@@ -1,0 +1,9 @@
+{
+    "config": {
+        "mode": "tasks",
+        "invite_codes": [],
+        "taskDelay": [1,2],
+        "threads_count": 3,
+        "capmonster_key": ""
+    }
+}
