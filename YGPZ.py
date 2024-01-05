@@ -14,7 +14,6 @@ import requests
 import tls_client
 import ua_generator
 from bs4 import BeautifulSoup
-from web3 import Web3
 
 from utils.logger import MultiThreadLogger
 
@@ -32,7 +31,7 @@ def generate_csrf_token() -> str:
 
 class YOGA:
 
-    def __init__(self, proxy, tw_auth_token, tw_csrf, private, code, cap_key):
+    def __init__(self, proxy, tw_auth_token, tw_csrf, code, cap_key):
 
         self.InviteCode = code
         self.cap_key = cap_key
@@ -40,9 +39,6 @@ class YOGA:
         self.defaultProxy = proxy
         proxy = proxy.split(':')
         proxy = f'http://{proxy[2]}:{proxy[3]}@{proxy[0]}:{proxy[1]}'
-
-        self.private = private
-        self.address = Web3(Web3.HTTPProvider('https://eth.llamarpc.com')).eth.account.from_key(self.private).address
 
         self.proxy = {'http': proxy,
                       'https': proxy}
@@ -344,8 +340,7 @@ def distributor(list_, thread_number, invite_codes, cap_key):
 
                     refCode = invite_codes[0]
 
-                    refCodes, p = function(private=account['private'],
-                            tw_auth_token=account['twitter']['auth_token'],
+                    refCodes, p = function(tw_auth_token=account['twitter']['auth_token'],
                             tw_csrf=account['twitter']['ct0'],
                             proxy=account['proxy'],
                             Ref=True,
@@ -362,7 +357,7 @@ def distributor(list_, thread_number, invite_codes, cap_key):
                     for j in refCodes:
                         invite_codes.append(j)
 
-                    logger.success(f"Аккаунт успешно зарегистрирован | {refCode} | {account['private']}")
+                    logger.success(f"Аккаунт успешно зарегистрирован | {refCode} | {account['twitter']['auth_token']}")
 
                     invite_codes = invite_codes[1:]
                     logger.skip()
@@ -388,8 +383,7 @@ def distributor(list_, thread_number, invite_codes, cap_key):
 
             try:
 
-                function(private=account['private'],
-                         tw_auth_token=account['twitter']['auth_token'],
+                function(tw_auth_token=account['twitter']['auth_token'],
                          tw_csrf=account['twitter']['ct0'],
                          proxy=account['proxy'],
                          Ref=False,
@@ -399,7 +393,7 @@ def distributor(list_, thread_number, invite_codes, cap_key):
                          refreshToken=account['refresh_token'],
                          cap_key=cap_key)
 
-                logger.success(f"Аккаунт успешно сделал задания | {account['private']}")
+                logger.success(f"Аккаунт успешно сделал задания | {account['twitter']['auth_token']}")
 
                 logger.skip()
 
@@ -412,14 +406,13 @@ def distributor(list_, thread_number, invite_codes, cap_key):
 
 
 
-def function(private: str, proxy: str, tw_auth_token: str, tw_csrf: str , Ref: bool, logger: MultiThreadLogger,cap_key: str, InviteCode: str = None, refreshToken: str = None):
+def function(proxy: str, tw_auth_token: str, tw_csrf: str , Ref: bool, logger: MultiThreadLogger,cap_key: str, InviteCode: str = None, refreshToken: str = None):
 
 
 
     Acc = YOGA(proxy=proxy,
                 tw_csrf=tw_csrf.rstrip(),
                 tw_auth_token=tw_auth_token,
-                private=private,
                 code=InviteCode,
                 cap_key=cap_key)
 
@@ -446,18 +439,18 @@ def function(private: str, proxy: str, tw_auth_token: str, tw_csrf: str , Ref: b
                 main_data = Acc.login()
 
         with open("Result.txt", "a+") as file:
-            file.write(f"{main_data['refreshToken']}|{proxy}|{private}|{tw_auth_token}|{tw_csrf}\n")
+            file.write(f"{main_data['refreshToken']}|{proxy}|{tw_auth_token}|{tw_csrf}\n")
 
         if Ref:
 
             try:
                 res = Acc.AcceptInvite(InviteCode)
                 if res:
-                    logger.success(f"{private} | Success Invite")
+                    logger.success(f"{tw_auth_token} | Success Invite")
                 else:
                     return "Again", "Again"
             except:
-                logger.success(f"{private} | Error Invite")
+                logger.success(f"{tw_auth_token} | Error Invite")
 
     info = Acc.AccountData
 
@@ -469,18 +462,18 @@ def function(private: str, proxy: str, tw_auth_token: str, tw_csrf: str , Ref: b
                     try:
                         Acc.CompleteBreath()
 
-                        logger.success(f"{private} | Success {name}")
+                        logger.success(f"{tw_auth_token} | Success {name}")
 
                     except:
-                        logger.success(f"{private} | Error {name}")
+                        logger.success(f"{tw_auth_token} | Error {name}")
             else:
                 try:
                     Acc.CompleteBreath()
 
-                    logger.success(f"{private} | Success {name}")
+                    logger.success(f"{tw_auth_token} | Success {name}")
 
                 except:
-                    logger.success(f"{private} | Error {name}")
+                    logger.success(f"{tw_auth_token} | Error {name}")
 
         else:
 
@@ -489,9 +482,9 @@ def function(private: str, proxy: str, tw_auth_token: str, tw_csrf: str , Ref: b
                 time.sleep(2)
 
                 Acc.CompleteTask(name)
-                logger.success(f"{private} | Success {name}")
+                logger.success(f"{tw_auth_token} | Success {name}")
             except:
-                logger.error(f"{private} | Like/Retweet Error {name}")
+                logger.error(f"{tw_auth_token} | Like/Retweet Error {name}")
 
 
     for name, value in info['ygpzQuesting']['info']['specialProgress'].items():
@@ -503,9 +496,9 @@ def function(private: str, proxy: str, tw_auth_token: str, tw_csrf: str , Ref: b
                 time.sleep(2)
 
                 Acc.CompleteTask(name)
-                logger.success(f"{private} | Success {name}")
+                logger.success(f"{tw_auth_token} | Success {name}")
             except:
-                logger.error(f"{private} | Like/Retweet Error {name}")
+                logger.error(f"{tw_auth_token} | Like/Retweet Error {name}")
 
             continue
 
@@ -525,13 +518,7 @@ if __name__ == '__main__':
     authTokens = []
     csrfs = []
     proxies = []
-    privates = []
 
-
-
-    with open('Files/Privates.txt', 'r') as file:
-        for i in file:
-            privates.append(i.rstrip())
 
     with open('Files/Proxy.txt', 'r') as file:
         for i in file:
@@ -552,9 +539,8 @@ if __name__ == '__main__':
         with open('Result.txt', 'r') as file:
             for i in file:
                 ready_array.append({"proxy": i.split("|")[1],
-                                    "twitter": {"auth_token": i.split("|")[3],
-                                                "ct0": i.split("|")[4]},
-                                    "private": i.split("|")[2],
+                                    "twitter": {"auth_token": i.split("|")[2],
+                                                "ct0": i.split("|")[3]},
                                     "refresh_token": i.split("|")[0],
                                     "delay": [data['config']['taskDelay'][0], data['config']['taskDelay'][1]],
                                     "mode": data['config']['mode']})
@@ -567,7 +553,6 @@ if __name__ == '__main__':
             ready_array.append({"proxy": item,
                                 "twitter": {"auth_token": authTokens[index],
                                             "ct0": csrfs[index] if csrfs[index] != authTokens[index] else generate_csrf_token()},
-                                "private": privates[index],
                                 "delay": [data['config']['taskDelay'][0], data['config']['taskDelay'][1]],
                                 "mode": data['config']['mode']})
 
