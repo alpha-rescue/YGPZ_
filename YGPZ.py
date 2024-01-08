@@ -59,7 +59,7 @@ class YOGA:
     def login(self):
 
         response = self.session.post("https://www.googleapis.com/identitytoolkit/v3/relyingparty/createAuthUri?key=AIzaSyBPmETcQFfpDrw_eB6s8DCkDpYYBt3e8Wg",
-                                     json={"providerId":"twitter.com","continueUri":"https://auth.well3.com/__/auth/handler","customParameter":{}},
+                                     json={"providerId":"twitter.com","continueUri":"https://well3.com/assets/__/auth/handler","customParameter":{}},
                                      headers={"X-Client-Data":"CPWCywE=",
                                               "content-type": "application/json"})
         # print(response.json())
