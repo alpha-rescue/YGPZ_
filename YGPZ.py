@@ -458,7 +458,7 @@ def function(proxy: str, tw_auth_token: str, tw_csrf: str , Ref: bool, logger: M
 
         if "complete-breath-session" in name and value['value'] != 2:
             if value['nextAvailableFrom']:
-                if value['nextAvailableFrom'] < int(str(datetime.datetime.now().timestamp()).replace(".","")[:-3]):
+                if value['nextAvailableFrom'] < int(time.time() * 1000):
                     try:
                         Acc.CompleteBreath()
 
